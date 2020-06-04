@@ -12,6 +12,8 @@ class BrowseContent(tk.Frame):
                                    background='#929292')
         self.lowerframe = tk.Frame(self,
                                    background='#929292')
+        self.lowestframe = tk.Frame(self,
+                                    background='#929292')
 
         self.label = tk.Label(self.upperframe,
                               text="Upload the corrected image data and ground truth data",
@@ -38,6 +40,7 @@ class BrowseContent(tk.Frame):
 
         self.upperframe.grid(row=0, column=0, sticky='nsew')
         self.lowerframe.grid(row=1, column=0, sticky='nsew')
+        self.lowestframe.grid(row=2, column=0, sticky='nsew')
 
         self.upperframe.grid_rowconfigure(0, weight=1)
         self.upperframe.grid_columnconfigure(0, weight=1)
@@ -45,13 +48,20 @@ class BrowseContent(tk.Frame):
         self.lowerframe.grid_columnconfigure((0, 1), weight=1)
         self.lowerframe.grid_rowconfigure(0, weight=1)
 
+        self.lowestframe.grid_rowconfigure((0, 1), weight=1)
+        self.lowestframe.grid_columnconfigure(0, weight=1)
+
         self.grid_rowconfigure((0, 1), weight=1)
         self.columnconfigure(0, weight=1)
 
     def image_browse(self):
         self.image = filedialog.askopenfilename(initialdir='/', title='select a file', filetype=[('Matlab', ".mat")])
         self.state.set_image_file(self.image)
+        self.image_path = tk.Label(self.lowestframe, text=self.image, background='#929292')
+        self.image_path.grid(row=0, column=0, sticky='nsew')
 
     def gt_browse(self):
         self.gt = filedialog.askopenfilename(initialdir='/', title='select a file', filetype=[('Matlab', ".mat")])
         self.state.set_gt_file(self.gt)
+        self.gt_path = tk.Label(self.lowestframe, text=self.gt, background='#929292')
+        self.gt_path.grid(row=1, column=0, sticky='nsew')
