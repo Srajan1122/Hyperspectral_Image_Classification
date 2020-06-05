@@ -29,8 +29,8 @@ class RunModel:
         self.mutation = float(self.state.mutation)
         self.crossover = float(self.state.crossover)
 
-        image = self.load_data(self.state.image_file)
-        gt = self.load_data(self.state.gt_file)
+        image = np.array(self.load_data(self.state.image_file))
+        gt = np.array(self.load_data(self.state.gt_file))
 
         sp.save_rgb('image.jpg', image, [43, 21, 11])
         sp.save_rgb('gt.jpg', gt, colors=sp.spy_colors)
@@ -85,84 +85,14 @@ class RunModel:
         self.model.run()
         accuracy, best_parameters = self.best_parameters(self.model)
         data = self.initial_data
-        model = MLPClassifier(hidden_layer_sizes=tuple(data[0][best_parameters[0]]),
-                              activation='relu',
-                              solver='adam',
-                              alpha=data[1][best_parameters[1]],
-                              batch_size=data[2][best_parameters[2]],
-                              learning_rate='constant',
-                              learning_rate_init=data[3][best_parameters[3]],
-                              power_t=0.5,
-                              max_iter=1000,
-                              shuffle=True,
-                              random_state=1,
-                              tol=0.0001,
-                              verbose=False,
-                              warm_start=True,
-                              momentum=0.9,
-                              nesterovs_momentum=True,
-                              early_stopping=False,
-                              validation_fraction=0.18,  # 0.33 0.18
-                              beta_1=0.9,
-                              beta_2=0.999,
-                              epsilon=1e-08,
-                              n_iter_no_change=data[4][best_parameters[4]],
-                              max_fun=15000)
-        print('fitting')
-        model.fit(X_train, y_train)
-        print('fittin over')
-        prediction = model.predict(X)
-
-        if len(prediction.shape) == 2:
-            predicted_gt_1 = np.argmax(prediction, axis=1)
-            predicted_gt_1_list = list(predicted_gt_1)
-            predicted_gt_1_list = [x + 1 for x in predicted_gt_1_list]
-        else:
-            predicted_gt_1_list = prediction
-
-        for i in self.zero_data:
-            predicted_gt_1_list = np.insert(predicted_gt_1_list, i, 0)
-        predicted_gt_size = int(math.sqrt(predicted_gt_1_list.shape[0]))
-
-        self.predicted_gt_1_list = predicted_gt_1_list.reshape(predicted_gt_size, -1)
-
-        print('resize')
-
-        sp.save_rgb('predicted_gt.jpg', self.predicted_gt_1_list, colors=sp.spy_colors)
-
-        self.predicted_gt = Image.open('predicted_gt.jpg')
-        self.predicted_gt = self.predicted_gt.resize((250, 250), Image.ANTIALIAS)
-        self.predicted_gt = ImageTk.PhotoImage(self.predicted_gt)
+        self.X_train = X_train
+        self.y_train = y_train
+        self.X = X
 
         self.output_frame = tk.Frame(self.master.master)
         self.output_frame.grid(row=5, column=0, sticky='nsew', pady=15, padx=15)
 
-        self.output_detail_frame = tk.Frame(self.output_frame)
-        self.output_detail_frame.grid(row=0, column=0, sticky='nsew')
-
-        self.accuracy = tk.Label(self.output_detail_frame,
-                                 text='Accuracy: ' + str(accuracy))
-
-        self.hidden_layer = tk.Label(self.output_detail_frame,
-                                     text='hidden_layer_sizes: ' + str(data[0][best_parameters[0]]))
-        self.alpha = tk.Label(self.output_detail_frame,
-                              text='alpha: ' + str(data[1][best_parameters[1]]))
-        self.batch_size = tk.Label(self.output_detail_frame,
-                                   text='batch_size: ' + str(data[2][best_parameters[2]]))
-        self.learning_rate_init = tk.Label(self.output_detail_frame,
-                                           text='learning_rate_init: ' + str(data[3][best_parameters[3]]))
-        self.n_iter_no_change = tk.Label(self.output_detail_frame,
-                                         text='n_iter_no_change: ' + str(data[4][best_parameters[4]]))
-
-        self.accuracy.grid(row=0, column=0, sticky='nsew')
-        self.hidden_layer.grid(row=1, column=0, sticky='nsew')
-        self.alpha.grid(row=2, column=0, sticky='nsew')
-        self.batch_size.grid(row=3, column=0, sticky='nsew')
-        self.learning_rate_init.grid(row=4, column=0, sticky='nsew')
-        self.n_iter_no_change.grid(row=5, column=0, sticky='nsew')
-
-        self.output_detail_frame.grid_rowconfigure((0, 1, 2, 3, 4, 5), weight=1)
-        self.output_detail_frame.columnconfigure(0, weight=1)
+        self.Mlp(best_parameters, data, self.X_train, self.y_train, self.X, accuracy)
 
         self.output_image_frame = tk.Frame(self.output_frame)
         self.output_image_frame.grid(row=0, column=1, sticky='nsew')
@@ -184,7 +114,10 @@ class RunModel:
 
     def load_data(self, path):
         loaded_dataset = io.loadmat(path)
-        image = list(loaded_dataset.values())[-1]
+        for key, value in loaded_dataset.items():
+            if isinstance(value, type(np.array([1]))):
+                image = loaded_dataset[key]
+
         return image
 
     def resize_data(self, image, gt):
@@ -194,7 +127,7 @@ class RunModel:
 
     def drop_if_gt_zero(self, data):
         data = pd.DataFrame(data)
-        self.zero_data = data.index[data[200] == 0].tolist()
+        self.zero_data = data.index[data.iloc[:, -1] == 0].tolist()
         data = data[data.iloc[:, -1] != 0]
         return data
 
@@ -298,6 +231,81 @@ class RunModel:
         for index, i in enumerate(self.initial_data):
             print(i[best_parameters[index]])
         return accuracy, best_parameters
+
+    def Mlp(self, best_parameters, data, X_train, y_train, X, accuracy):
+        model = MLPClassifier(hidden_layer_sizes=tuple(data[0][best_parameters[0]]),
+                              activation='relu',
+                              solver='adam',
+                              alpha=data[1][best_parameters[1]],
+                              batch_size=data[2][best_parameters[2]],
+                              learning_rate='constant',
+                              learning_rate_init=data[3][best_parameters[3]],
+                              power_t=0.5,
+                              max_iter=1000,
+                              shuffle=True,
+                              random_state=1,
+                              tol=0.0001,
+                              verbose=False,
+                              warm_start=True,
+                              momentum=0.9,
+                              nesterovs_momentum=True,
+                              early_stopping=False,
+                              validation_fraction=0.18,  # 0.33 0.18
+                              beta_1=0.9,
+                              beta_2=0.999,
+                              epsilon=1e-08,
+                              n_iter_no_change=data[4][best_parameters[4]],
+                              max_fun=15000)
+        print('fitting')
+        model.fit(X_train, y_train)
+        prediction = model.predict(X)
+
+        if len(prediction.shape) == 2:
+            predicted_gt_1 = np.argmax(prediction, axis=1)
+            predicted_gt_1_list = list(predicted_gt_1)
+            predicted_gt_1_list = [x + 1 for x in predicted_gt_1_list]
+        else:
+            predicted_gt_1_list = prediction
+
+        for i in self.zero_data:
+            predicted_gt_1_list = np.insert(predicted_gt_1_list, i, 0)
+        predicted_gt_size = int(math.sqrt(predicted_gt_1_list.shape[0]))
+
+        self.predicted_gt_1_list = predicted_gt_1_list.reshape(predicted_gt_size, -1)
+
+        sp.save_rgb('predicted_gt.jpg', self.predicted_gt_1_list, colors=sp.spy_colors)
+
+        self.predicted_gt = Image.open('predicted_gt.jpg')
+        self.predicted_gt = self.predicted_gt.resize((250, 250), Image.ANTIALIAS)
+        self.predicted_gt = ImageTk.PhotoImage(self.predicted_gt)
+
+        self.output_detail_frame = tk.Frame(self.output_frame)
+        self.output_detail_frame.grid(row=0, column=0, sticky='nsew')
+
+        self.accuracy = tk.Label(self.output_detail_frame,
+                                 text='Accuracy: ' + str(accuracy))
+
+        self.hidden_layer = tk.Label(self.output_detail_frame,
+                                     text='hidden_layer_sizes: ' + str(data[0][best_parameters[0]]))
+        self.alpha = tk.Label(self.output_detail_frame,
+                              text='alpha: ' + str(data[1][best_parameters[1]]))
+        self.batch_size = tk.Label(self.output_detail_frame,
+                                   text='batch_size: ' + str(data[2][best_parameters[2]]))
+        self.learning_rate_init = tk.Label(self.output_detail_frame,
+                                           text='learning_rate_init: ' + str(data[3][best_parameters[3]]))
+        self.n_iter_no_change = tk.Label(self.output_detail_frame,
+                                         text='n_iter_no_change: ' + str(data[4][best_parameters[4]]))
+
+        self.accuracy.grid(row=0, column=0, sticky='nsew')
+        self.hidden_layer.grid(row=1, column=0, sticky='nsew')
+        self.alpha.grid(row=2, column=0, sticky='nsew')
+        self.batch_size.grid(row=3, column=0, sticky='nsew')
+        self.learning_rate_init.grid(row=4, column=0, sticky='nsew')
+        self.n_iter_no_change.grid(row=5, column=0, sticky='nsew')
+
+        self.output_detail_frame.grid_rowconfigure((0, 1, 2, 3, 4, 5), weight=1)
+        self.output_detail_frame.columnconfigure(0, weight=1)
+
 
 # [133, 152, 133, 179, 198]
 # 0.01
