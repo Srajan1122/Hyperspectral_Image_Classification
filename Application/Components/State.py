@@ -7,6 +7,7 @@ class State:
     generation = 1
     mutation = 0
     crossover = 0
+    model = 'Artificial Neural Network'
 
     image_file = ''
     gt_file = ''
@@ -50,3 +51,8 @@ class State:
     @classmethod
     def set_crossover(cls, size):
         cls.crossover = size
+
+    @classmethod
+    def change_model(cls, model):
+        cls.model = model
+        print(cls.model)

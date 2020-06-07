@@ -1,12 +1,15 @@
 import tkinter as tk
 from tkinter import ttk
+from tkinter import messagebox
 from Application.Components.RunModel import RunModel
 import time
+from Application.Components.State import State
 
 
 class RunFrame(tk.Frame):
     def __init__(self, master, *args, **kwargs):
         tk.Frame.__init__(self, master, *args, **kwargs)
+        self.state = State()
         self['background'] = '#929292'
 
         self.run = tk.Button(self,
@@ -27,6 +30,28 @@ class RunFrame(tk.Frame):
         self.grid_columnconfigure(0, weight=1)
 
     def run(self):
+        if self.state.image_file == '':
+            messagebox.showwarning("warning", "Image is not uploaded")
+            return
+        if self.state.gt_file == '':
+            messagebox.showwarning("warning", "Ground truth is not uploaded")
+            return
+        if self.state.gt_file == self.state.image_file:
+            messagebox.showwarning("warning", "Check your uploaded file")
+            return
+        if self.state.test_set == 0:
+            messagebox.showwarning("warning", "Testing size should not be zero")
+            return
+
+        try:
+            if self.model.my_thread.is_alive():
+                print('hello gwt out')
+                messagebox.showwarning("warning", "Previous model is still running\nWait for it to finish")
+                return
+            self.model.output_frame.destroy()
+        except Exception:
+            pass
+
         self.model = RunModel(self)
         self.progressbar.grid(row=1, column=0, pady=10)
         self.progressbar.start()
