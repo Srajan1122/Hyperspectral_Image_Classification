@@ -1,4 +1,5 @@
 class State:
+    feature_extraction = True
     normalization = True
     feature_selection = True
     one_hot_encoding = True
@@ -19,6 +20,10 @@ class State:
     @classmethod
     def change_feature_selection(cls):
         cls.feature_selection = not cls.feature_selection
+
+    @classmethod
+    def change_feature_extraction(cls):
+        cls.feature_extraction = not cls.feature_extraction
 
     @classmethod
     def change_one_hot_encoding(cls):
@@ -55,4 +60,3 @@ class State:
     @classmethod
     def change_model(cls, model):
         cls.model = model
-        print(cls.model)

@@ -1,5 +1,5 @@
 import tkinter as tk
-from Application.Components.State import State
+from .State import State
 from tkinter import filedialog
 
 

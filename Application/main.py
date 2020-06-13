@@ -1,10 +1,10 @@
 import tkinter as tk
 
-from Application.Components.VerticalScroll import ScrollableFrame
-from Application.Components.ScaleContent import ScaleContent
-from Application.Components.ButtonContent import ButtonContent
-from Application.Components.BrowseContent import BrowseContent
-from Application.Components.RunFrame import RunFrame
+from Components.BrowseContent import BrowseContent
+from Components.ButtonContent import ButtonContent
+from Components.RunFrame import RunFrame
+from Components.ScaleContent import ScaleContent
+from Components.VerticalScroll import ScrollableFrame
 
 
 class MainFrame(tk.Frame):

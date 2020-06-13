@@ -1,7 +1,7 @@
 import tkinter as tk
-from Application.Components.State import State
-from Application.Components.ToggleButton import ToggleButton
-from Application.Components.ModelSelection import ModelSelection
+from .State import State
+from .ToggleButton import ToggleButton
+from .ModelSelection import ModelSelection
 
 
 class ButtonContent(tk.Frame):
@@ -22,6 +22,10 @@ class ButtonContent(tk.Frame):
                                               text='Feature Selection',
                                               command=self.state.change_feature_selection)
 
+        self.feature_extraction = ToggleButton(self.toggleFrame,
+                                              text='Feature Extraction',
+                                              command=self.state.change_feature_extraction)
+
         self.one_hot_encoding = ToggleButton(self.toggleFrame,
                                              text='OneHotEncoding',
                                              command=self.state.change_one_hot_encoding)
@@ -30,9 +34,10 @@ class ButtonContent(tk.Frame):
 
         self.normalization.grid(row=0, column=0, padx=10)
         self.feature_selection.grid(row=0, column=1, padx=10)
-        self.one_hot_encoding.grid(row=0, column=2, padx=10)
+        self.feature_extraction.grid(row=0, column=2, padx=10)
+        self.one_hot_encoding.grid(row=0, column=3, padx=10)
 
-        self.toggleFrame.grid_columnconfigure((0, 1, 2), weight=1)
+        self.toggleFrame.grid_columnconfigure((0, 1, 2, 3), weight=1)
         self.toggleFrame.grid_rowconfigure(0, weight=1)
 
         self.selectFrame.grid_rowconfigure(0, weight=1)

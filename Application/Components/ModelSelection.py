@@ -1,5 +1,5 @@
 import tkinter as tk
-from Application.Components.State import State
+from .State import State
 
 
 class ModelSelection():
@@ -9,6 +9,8 @@ class ModelSelection():
         options = [
             'Artificial Neural Network',
             'Support Vector Machine',
+            'Convolutional Neural Network',
+            'Recurrent Neural Network'
         ]
 
         self.label = tk.Label(self.master.selectFrame, text='Select the model', background='#929292')

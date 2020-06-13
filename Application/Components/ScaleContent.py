@@ -1,6 +1,6 @@
 import tkinter as tk
-from Application.Components.CustomScale import CustomScale
-from Application.Components.State import State
+from .CustomScale import CustomScale
+from .State import State
 
 
 class ScaleContent(tk.Frame):

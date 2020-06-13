@@ -1,9 +1,9 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
-from Application.Components.RunModel import RunModel
+from .RunModel import RunModel
 import time
-from Application.Components.State import State
+from .State import State
 
 
 class RunFrame(tk.Frame):
@@ -45,7 +45,7 @@ class RunFrame(tk.Frame):
 
         try:
             if self.model.my_thread.is_alive():
-                print('hello gwt out')
+                print('Please don\'t interrupt this process')
                 messagebox.showwarning("warning", "Previous model is still running\nWait for it to finish")
                 return
             self.model.output_frame.destroy()
